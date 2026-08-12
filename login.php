@@ -20,7 +20,7 @@ if (isset($_POST['login'])) {
 
         // ambil data user dari database
         $query = "SELECT * FROM users WHERE username = ?";
-        $stmt = mysqli_prepare($koneksi, $query);
+        $stmt  = mysqli_prepare($koneksi, $query);
         mysqli_stmt_bind_param($stmt, "s", $username);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -31,9 +31,9 @@ if (isset($_POST['login'])) {
             if (password_verify($password, $user['password'])) {
 
                 // simpan data ke session
-                $_SESSION['login'] = true;
-                $_SESSION['id_user'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
+                $_SESSION['login']        = true;
+                $_SESSION['id_user']      = $user['id'];
+                $_SESSION['username']     = $user['username'];
                 $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
 
                 // redirect ke index
@@ -56,7 +56,7 @@ if (isset($_POST['login'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Aplikasi Inventaris Barang</title>
+    <title>Login - Aplikasi Simpan Barang</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -68,7 +68,7 @@ if (isset($_POST['login'])) {
             <div class="card">
                 <div class="card-header bg-primary text-white text-center">
                     <h5 class="mb-0">LOGIN SYSTEM</h5>
-                    <small>Sistem Informasi Inventaris Barang</small>
+                    <small>Aplikasi Simpan Barang</small>
                 </div>
                 <div class="card-body">
 

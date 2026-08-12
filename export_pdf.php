@@ -7,29 +7,33 @@ cek_login();
 
 use Dompdf\Dompdf;
 
-// get keyword pencarian & parameter filter tanggal
-$keyword = isset($_GET['cari']) ? mysqli_real_escape_string($koneksi, trim($_GET['cari'])) : '';
-$tgl_awal = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($koneksi, trim($_GET['tgl_awal'])) : '';
+// get keyword pencarian, status & parameter filter tanggal
+$keyword   = isset($_GET['cari']) ? mysqli_real_escape_string($koneksi, trim($_GET['cari'])) : '';
+$status    = isset($_GET['status']) ? mysqli_real_escape_string($koneksi, trim($_GET['status'])) : '';
+$tgl_awal  = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($koneksi, trim($_GET['tgl_awal'])) : '';
 $tgl_akhir = isset($_GET['tgl_akhir']) ? mysqli_real_escape_string($koneksi, trim($_GET['tgl_akhir'])) : '';
 
 // normalkan tanggal jika tanggal awal lebih besar dari tanggal akhir
 if (!empty($tgl_awal) && !empty($tgl_akhir) && $tgl_awal > $tgl_akhir) {
-    $temp = $tgl_awal;
-    $tgl_awal = $tgl_akhir;
+    $temp      = $tgl_awal;
+    $tgl_awal  = $tgl_akhir;
     $tgl_akhir = $temp;
 }
 
-// susun filter klausa WHERE
+// susun filter WHERE
 $where = "WHERE 1=1";
 if (!empty($keyword)) {
-    $where .= " AND (b.nama_barang LIKE '%$keyword%' OR b.kode_barang LIKE '%$keyword%' OR k.nama_kategori LIKE '%$keyword%')";
+    $where .= " AND (b.nama_barang LIKE '%$keyword%' OR b.kode_barang LIKE '%$keyword%' OR b.nama_pemilik LIKE '%$keyword%' OR b.nomor_loker LIKE '%$keyword%' OR k.nama_kategori LIKE '%$keyword%')";
+}
+if (!empty($status) && in_array($status, ['Tersimpan', 'Diambil'])) {
+    $where .= " AND b.status = '$status'";
 }
 if (!empty($tgl_awal) && !empty($tgl_akhir)) {
-    $where .= " AND b.tanggal_masuk BETWEEN '$tgl_awal' AND '$tgl_akhir'";
+    $where .= " AND DATE(b.tanggal_masuk) BETWEEN '$tgl_awal' AND '$tgl_akhir'";
 } elseif (!empty($tgl_awal)) {
-    $where .= " AND b.tanggal_masuk >= '$tgl_awal'";
+    $where .= " AND DATE(b.tanggal_masuk) >= '$tgl_awal'";
 } elseif (!empty($tgl_akhir)) {
-    $where .= " AND b.tanggal_masuk <= '$tgl_akhir'";
+    $where .= " AND DATE(b.tanggal_masuk) <= '$tgl_akhir'";
 }
 
 // query buat ambil data barang
@@ -48,11 +52,11 @@ ob_start();
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>laporan data inventaris barang</title>
+    <title>laporan data simpan barang</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 10px;
         }
         .text-center {
             text-align: center;
@@ -75,7 +79,7 @@ ob_start();
             border: 1px solid #333;
         }
         th, td {
-            padding: 6px;
+            padding: 5px;
         }
         th {
             background-color: #f2f2f2;
@@ -91,9 +95,9 @@ ob_start();
 <body>
 
     <div class="header">
-        <h3 style="margin: 0;">SISTEM INFORMASI INVENTARIS BARANG</h3>
+        <h3 style="margin: 0;">SISTEM INFORMASI SIMPAN BARANG (PENITIPAN)</h3>
         <p style="margin: 3px 0;">
-            LAPORAN DATA INVENTARIS
+            LAPORAN DATA BARANG SIMPANAN
             <?php if (!empty($tgl_awal) && !empty($tgl_akhir)): ?>
                 (PERIODE: <?php echo date('d-m-Y', strtotime($tgl_awal)); ?> s/d <?php echo date('d-m-Y', strtotime($tgl_akhir)); ?>)
             <?php else: ?>
@@ -106,50 +110,47 @@ ob_start();
     <table>
         <thead>
             <tr>
-                <th style="width: 30px;">No</th>
-                <th>Kode Barang</th>
+                <th style="width: 25px;">No</th>
+                <th>Kode Titip</th>
                 <th>Nama Barang</th>
+                <th>Pemilik / Kontak</th>
                 <th>Kategori</th>
-                <th>Jumlah</th>
-                <th>Satuan</th>
+                <th>No. Loker</th>
                 <th>Kondisi</th>
-                <th>Tanggal Masuk</th>
+                <th>Tgl Dititipkan</th>
+                <th>Tgl Diambil</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
             <?php
             $no = 1;
-            $total_stok = 0;
             if (mysqli_num_rows($result) > 0):
                 while ($row = mysqli_fetch_assoc($result)):
-                    $total_stok += $row['jumlah'];
             ?>
             <tr>
                 <td class="text-center"><?php echo $no++; ?></td>
                 <td class="text-center"><?php echo $row['kode_barang']; ?></td>
                 <td><?php echo $row['nama_barang']; ?></td>
+                <td><?php echo $row['nama_pemilik']; ?><br><small><?php echo $row['kontak_pemilik']; ?></small></td>
                 <td><?php echo $row['nama_kategori']; ?></td>
-                <td class="text-center"><?php echo $row['jumlah']; ?></td>
-                <td><?php echo $row['satuan']; ?></td>
-                <td><?php echo $row['kondisi']; ?></td>
-                <td class="text-center"><?php echo date('d-m-Y', strtotime($row['tanggal_masuk'])); ?></td>
+                <td class="text-center"><?php echo $row['nomor_loker']; ?></td>
+                <td class="text-center"><?php echo $row['kondisi']; ?></td>
+                <td class="text-center"><?php echo date('d-m-Y H:i', strtotime($row['tanggal_masuk'])); ?></td>
+                <td class="text-center"><?php echo !empty($row['tanggal_keluar']) ? date('d-m-Y H:i', strtotime($row['tanggal_keluar'])) : '-'; ?></td>
+                <td class="text-center"><?php echo $row['status']; ?></td>
             </tr>
             <?php endwhile; ?>
-            <tr style="font-weight: bold; background-color: #f9f9f9;">
-                <td colspan="4" class="text-right">TOTAL SELURUH BARANG:</td>
-                <td class="text-center"><?php echo $total_stok; ?></td>
-                <td colspan="3"></td>
-            </tr>
             <?php else: ?>
             <tr>
-                <td colspan="8" class="text-center">Tidak ada data barang yang tersedia.</td>
+                <td colspan="10" class="text-center">Tidak ada data barang simpanan yang tersedia.</td>
             </tr>
             <?php endif; ?>
         </tbody>
     </table>
 
     <div class="ttd">
-        <p style="margin-bottom: 50px;">Mengetahui,<br><b>Petugas Inventaris</b></p>
+        <p style="margin-bottom: 50px;">Mengetahui,<br><b>Petugas Penitipan</b></p>
         <p><b><u><?php echo $_SESSION['nama_lengkap']; ?></u></b><br>Administrator</p>
     </div>
 
@@ -161,10 +162,10 @@ $html = ob_get_clean();
 // buat pdf pakai dompdf
 $dompdf = new Dompdf();
 $dompdf->loadHtml($html);
-$dompdf->setPaper('A4', 'portrait');
+$dompdf->setPaper('A4', 'landscape');
 $dompdf->render();
 
 // tampilkan pdf di browser
-$dompdf->stream("Laporan_Inventaris_Barang_" . date('Ymd_His') . ".pdf", ["Attachment" => false]);
+$dompdf->stream("Laporan_Simpan_Barang_" . date('Ymd_His') . ".pdf", ["Attachment" => false]);
 exit;
-
+?>

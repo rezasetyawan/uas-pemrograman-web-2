@@ -1,5 +1,4 @@
 <?php
-
 // mulai session jika belum berjalan
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -12,7 +11,7 @@ mysqli_report(MYSQLI_REPORT_OFF);
 $host = '127.0.0.1';
 $user = 'root';
 $pass = 'root';
-$db   = 'db_inventaris';
+$db   = 'db_simpan_barang';
 $port = 3306;
 
 // koneksi ke database mysql
