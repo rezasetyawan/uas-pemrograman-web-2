@@ -81,12 +81,12 @@ if (isset($_POST['login'])) {
                     <form action="login.php" method="POST">
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" name="username" id="username" class="form-control" placeholder="Masukkan username" required autofocus>
+                            <input type="text" name="username" id="username" class="form-control" placeholder="Masukkan username" value="admin" required autofocus>
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" name="password" id="password" class="form-control" placeholder="Masukkan password" required>
+                            <input type="password" name="password" id="password" class="form-control" placeholder="Masukkan password" value="password" required>
                         </div>
 
                         <button type="submit" name="login" class="btn btn-primary w-100">Login</button>
