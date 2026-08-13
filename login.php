@@ -93,7 +93,7 @@ if (isset($_POST['login'])) {
                     </form>
                 </div>
                 <div class="card-footer text-center text-muted small">
-                    Default: admin / admin123
+                    Default: admin / password
                 </div>
             </div>
         </div>
